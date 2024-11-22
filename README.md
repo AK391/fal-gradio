@@ -34,7 +34,6 @@ gr.load(
 
 Run the Python file, and you should see a Gradio Interface connected to the model on fal!
 
-![ChatInterface](chatinterface.png)
 
 # Customization 
 
@@ -48,11 +47,9 @@ gr.load(
     name='fal-ai/flux',
     src=fal_gradio.registry,
     title='fal-Gradio Integration',
-    description="Chat with fal-ai/flux model.",
-    examples=["Explain quantum gravity to a 5-year old.", "How many R are there in the word Strawberry?"]
+    description="fal-ai/flux model.",
 ).launch()
 ```
-![ChatInterface with customizations](chatinterface_with_customization.png)
 
 # Composition
 
@@ -82,13 +79,21 @@ The following model types are currently supported:
 - Text-to-Image models:
   - fal-ai/flux
   - fal-ai/flux-dev
+  - Supported parameters:
+    - Prompt
+    - Negative Prompt (optional)
+    - Steps (1-100, default: 30)
+    - Guidance Scale (1-20, default: 7.5)
+    - Seed (optional)
+
 - Text-to-Video models:
   - fal-ai/ltx-video
-
-For each model type, appropriate input components are automatically configured, such as:
-- Text prompts
-- Negative prompts
-- Generation parameters (steps, guidance scale, seed)
+  - Supported parameters:
+    - Prompt (multi-line input)
+    - Negative Prompt (optional)
+    - Steps (1-100, default: 30)
+    - Guidance Scale (1-20, default: 3)
+    - Seed (optional)
 
 -------
 
