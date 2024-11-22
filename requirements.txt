@@ -1,2 +1,2 @@
-openai
+fal-client
 gradio==5.0.0b5
