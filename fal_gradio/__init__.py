@@ -6,6 +6,7 @@ from PIL import Image
 import io
 import base64
 import numpy as np
+import tempfile
 
 __version__ = "0.0.1"
 
@@ -13,13 +14,22 @@ __version__ = "0.0.1"
 MODEL_TO_PIPELINE = {
     "fal-ai/flux": "text-to-image",
     "fal-ai/flux-dev": "text-to-image",
+    "fal-ai/haiper-video-v2": "text-to-video",
+    "fal-ai/mochi-v1": "text-to-video",
+    "fal-ai/minimax-video": "text-to-video",
+    "fal-ai/luma-dream-machine": "text-to-video",
+    "fal-ai/kling-video/v1/standard/text-to-video": "text-to-video",
+    "fal-ai/kling-video/v1/pro/text-to-video": "text-to-video",
+    "fal-ai/cogvideox-5b": "text-to-video",
     "fal-ai/ltx-video": "text-to-video",
+    "fal-ai/ltx-video/image-to-video": "image-to-video",
+    "fal-ai/fast-svd/text-to-video": "text-to-video",
+    "fal-ai/fast-svd-lcm/text-to-video": "text-to-video",
+    "fal-ai/t2v-turbo": "text-to-video",
+    "fal-ai/fast-animatediff/text-to-video": "text-to-video",
+    "fal-ai/fast-animatediff/turbo/text-to-video": "text-to-video",
+    "fal-ai/animatediff-sparsectrl-lcm": "text-to-video"
 }
-
-# Then update it with new mappings
-MODEL_TO_PIPELINE.update({
-    "fal-ai/ltx-video": "text-to-video",
-})
 
 # Add to PIPELINE_REGISTRY
 PIPELINE_REGISTRY = {
@@ -58,6 +68,29 @@ PIPELINE_REGISTRY = {
                     "prompt", "negative_prompt", "num_inference_steps",
                     "guidance_scale", "seed"
                 ], args) if v is not None and v != ""
+            }
+        },
+        "postprocess": lambda x: x["video"]["url"] if isinstance(x, dict) and "video" in x else x
+    },
+
+    "image-to-video": {
+        "inputs": [
+            ("image_url", gr.Image, {"label": "Input Image"}),
+            ("prompt", gr.Textbox, {"label": "Prompt", "lines": 5}),
+            ("negative_prompt", gr.Textbox, {"label": "Negative Prompt", "optional": True}),
+            ("num_inference_steps", gr.Slider, {"label": "Steps", "minimum": 1, "maximum": 100, "value": 30, "optional": True}),
+            ("guidance_scale", gr.Slider, {"label": "Guidance Scale", "minimum": 1, "maximum": 20, "value": 3, "optional": True}),
+            ("seed", gr.Number, {"label": "Seed", "optional": True})
+        ],
+        "outputs": [("video", gr.Video, {"label": "Generated Video"})],
+        "preprocess": lambda *args: {
+            "arguments": {
+                k: (fal_client.upload_file(numpy_to_temp_file(v)) if k == "image_url" and isinstance(v, np.ndarray) else v)
+                for k, v in zip([
+                    "image_url", "prompt", "negative_prompt", "num_inference_steps",
+                    "guidance_scale", "seed"
+                ], args) 
+                if (isinstance(v, np.ndarray) or (v is not None and v != ""))
             }
         },
         "postprocess": lambda x: x["video"]["url"] if isinstance(x, dict) and "video" in x else x
@@ -133,6 +166,22 @@ def handle_user_msg(message: str):
         return content
     else:
         raise NotImplementedError
+
+def numpy_to_temp_file(img_array):
+    """Convert numpy array to a temporary file and return its path"""
+    if img_array is None:
+        return None
+    
+    # Convert numpy array to PIL Image
+    img = Image.fromarray(img_array.astype('uint8'))
+    
+    # Create a temporary file
+    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.png')
+    
+    # Save the image to the temporary file
+    img.save(temp_file.name)
+    
+    return temp_file.name
 
 def registry(name: str | Dict, token: str | None = None, inputs=None, outputs=None, **kwargs):
     """
