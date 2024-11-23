@@ -108,7 +108,10 @@ def create_component(comp_type: type, name: str, config: Dict[str, Any]) -> gr.c
     return comp_type(label=config.get("label", name), **{k:v for k,v in config.items() if k != "label"})
 
 def get_pipeline(model: str) -> str:
-    return MODEL_TO_PIPELINE.get(model)
+    pipeline = MODEL_TO_PIPELINE.get(model)
+    if pipeline is None:
+        raise ValueError(f"Model '{model}' not found in MODEL_TO_PIPELINE. Available models: {list(MODEL_TO_PIPELINE.keys())}")
+    return pipeline
 
 def get_interface_args(pipeline: str) -> Tuple[List, List, Callable, Callable]:
     if pipeline not in PIPELINE_REGISTRY:
