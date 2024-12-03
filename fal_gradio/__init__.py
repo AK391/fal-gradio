@@ -28,7 +28,8 @@ MODEL_TO_PIPELINE = {
     "fal-ai/t2v-turbo": "text-to-video",
     "fal-ai/fast-animatediff/text-to-video": "text-to-video",
     "fal-ai/fast-animatediff/turbo/text-to-video": "text-to-video",
-    "fal-ai/animatediff-sparsectrl-lcm": "text-to-video"
+    "fal-ai/animatediff-sparsectrl-lcm": "text-to-video",
+    "fal-ai/luma-photon": "text-to-image"
 }
 
 # Add to PIPELINE_REGISTRY
@@ -94,6 +95,27 @@ PIPELINE_REGISTRY = {
             }
         },
         "postprocess": lambda x: x["video"]["url"] if isinstance(x, dict) and "video" in x else x
+    },
+
+    "text-to-image-with-aspect": {
+        "inputs": [
+            ("prompt", gr.Textbox, {"label": "Prompt"}),
+            ("aspect_ratio", gr.Dropdown, {
+                "label": "Aspect Ratio",
+                "choices": ["16:9", "9:16", "1:1", "4:3", "3:4", "21:9", "9:21"],
+                "value": "1:1",
+                "optional": True
+            })
+        ],
+        "outputs": [("images", gr.Gallery, {})],
+        "preprocess": lambda *args: {
+            "arguments": {
+                k: v for k, v in zip([
+                    "prompt", "aspect_ratio"
+                ], args) if v is not None and v != ""
+            }
+        },
+        "postprocess": lambda x: x["images"] if isinstance(x, dict) and "images" in x else x
     }
 }
 
