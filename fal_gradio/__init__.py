@@ -57,7 +57,7 @@ PIPELINE_REGISTRY = {
                 ], args) if v is not None and v != ""
             }
         },
-        "postprocess": lambda x: x["images"] if isinstance(x, dict) and "images" in x else x
+        "postprocess": lambda x: [img["url"] for img in x["images"]] if isinstance(x, dict) and "images" in x else x
     },
 
     "text-to-video": {
