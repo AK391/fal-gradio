@@ -29,7 +29,8 @@ MODEL_TO_PIPELINE = {
     "fal-ai/fast-animatediff/text-to-video": "text-to-video",
     "fal-ai/fast-animatediff/turbo/text-to-video": "text-to-video",
     "fal-ai/animatediff-sparsectrl-lcm": "text-to-video",
-    "fal-ai/luma-photon": "text-to-image"
+    "fal-ai/luma-photon": "text-to-image",
+    "fal-ai/kling-video/v1.5/pro/image-to-video": "image-to-video",
 }
 
 # Add to PIPELINE_REGISTRY
@@ -87,7 +88,19 @@ PIPELINE_REGISTRY = {
             ("negative_prompt", gr.Textbox, {"label": "Negative Prompt", "optional": True}),
             ("num_inference_steps", gr.Slider, {"label": "Steps", "minimum": 1, "maximum": 100, "value": 30, "optional": True}),
             ("guidance_scale", gr.Slider, {"label": "Guidance Scale", "minimum": 1, "maximum": 20, "value": 3, "optional": True}),
-            ("seed", gr.Number, {"label": "Seed", "optional": True})
+            ("seed", gr.Number, {"label": "Seed", "optional": True}),
+            ("duration", gr.Dropdown, {
+                "label": "Duration (seconds)", 
+                "choices": ["5", "10"],
+                "value": "5",
+                "optional": True
+            }),
+            ("aspect_ratio", gr.Dropdown, {
+                "label": "Aspect Ratio",
+                "choices": ["16:9", "9:16", "1:1"],
+                "value": "16:9",
+                "optional": True
+            })
         ],
         "outputs": [("video", gr.Video, {"label": "Generated Video"})],
         "preprocess": lambda *args: {
@@ -95,7 +108,7 @@ PIPELINE_REGISTRY = {
                 k: (fal_client.upload_file(numpy_to_temp_file(v)) if k == "image_url" and isinstance(v, np.ndarray) else v)
                 for k, v in zip([
                     "image_url", "prompt", "negative_prompt", "num_inference_steps",
-                    "guidance_scale", "seed"
+                    "guidance_scale", "seed", "duration", "aspect_ratio"
                 ], args) 
                 if (isinstance(v, np.ndarray) or (v is not None and v != ""))
             }
