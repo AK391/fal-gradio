@@ -40,14 +40,20 @@ PIPELINE_REGISTRY = {
             ("negative_prompt", gr.Textbox, {"label": "Negative Prompt", "optional": True}),
             ("num_inference_steps", gr.Slider, {"label": "Steps", "minimum": 1, "maximum": 100, "value": 30, "optional": True}),
             ("guidance_scale", gr.Slider, {"label": "Guidance Scale", "minimum": 1, "maximum": 20, "value": 7.5, "optional": True}),
-            ("seed", gr.Number, {"label": "Seed", "optional": True})
+            ("seed", gr.Number, {"label": "Seed", "optional": True}),
+            ("aspect_ratio", gr.Dropdown, {
+                "label": "Aspect Ratio", 
+                "choices": ["16:9", "9:16", "1:1", "4:3", "3:4", "21:9", "9:21"],
+                "value": "1:1",
+                "optional": True
+            })
         ],
         "outputs": [("images", gr.Gallery, {})],
         "preprocess": lambda *args: {
             "arguments": {
                 k: v for k, v in zip([
                     "prompt", "negative_prompt", "num_inference_steps",
-                    "guidance_scale", "seed"
+                    "guidance_scale", "seed", "aspect_ratio"
                 ], args) if v is not None and v != ""
             }
         },
@@ -97,26 +103,7 @@ PIPELINE_REGISTRY = {
         "postprocess": lambda x: x["video"]["url"] if isinstance(x, dict) and "video" in x else x
     },
 
-    "text-to-image-with-aspect": {
-        "inputs": [
-            ("prompt", gr.Textbox, {"label": "Prompt"}),
-            ("aspect_ratio", gr.Dropdown, {
-                "label": "Aspect Ratio",
-                "choices": ["16:9", "9:16", "1:1", "4:3", "3:4", "21:9", "9:21"],
-                "value": "1:1",
-                "optional": True
-            })
-        ],
-        "outputs": [("images", gr.Gallery, {})],
-        "preprocess": lambda *args: {
-            "arguments": {
-                k: v for k, v in zip([
-                    "prompt", "aspect_ratio"
-                ], args) if v is not None and v != ""
-            }
-        },
-        "postprocess": lambda x: x["images"] if isinstance(x, dict) and "images" in x else x
-    }
+
 }
 
 def create_component(comp_type: type, name: str, config: Dict[str, Any]) -> gr.components.Component:
